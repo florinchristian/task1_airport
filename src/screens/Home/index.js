@@ -7,6 +7,7 @@ import {BiUserCircle, BiChevronDown, BiLogOut} from "react-icons/bi";
 import {MdOutlineAirplaneTicket} from 'react-icons/md';
 
 import AuthModal from "../../components/AuthModal";
+import browseAirports from "../../services/browseAirports";
 
 const DropdownOption = ({icon, title, onClick}) => {
     const [hovered, setHovered] = useState(false);
@@ -23,7 +24,7 @@ const DropdownOption = ({icon, title, onClick}) => {
                 padding: '10px',
                 color: '#0079ff',
                 cursor: 'pointer',
-                backgroundColor: hovered? '#f8f8f8' : 'white'
+                backgroundColor: hovered ? '#f8f8f8' : 'white'
             }}
         >
             <div style={{
@@ -82,7 +83,7 @@ const UserDropdown = ({userEmail}) => {
                     overflow: 'hidden'
                 }}>
                     <DropdownOption
-                        icon={<MdOutlineAirplaneTicket />}
+                        icon={<MdOutlineAirplaneTicket/>}
                         title={"Your tickets"}
                     />
 
@@ -160,7 +161,71 @@ const AuthHeader = () => {
     );
 };
 
+const SearchItem = ({item, onClick}) => {
+    const [hovered, setHovered] = useState(false);
+
+    return (
+        <div
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onClick={onClick}
+            style={{
+                backgroundColor: hovered? '#f0f0f0' : null,
+                padding: '10px',
+                cursor: 'pointer'
+            }}
+        >
+            {item['name']}, {item['country']}, {item['county']}
+        </div>
+    );
+}
+
 const Home = () => {
+    const [fromAirportSearch, setFromAirportSearch] = useState('');
+    const [toAirportSearch, setToAirportSearch] = useState('');
+
+    const [fromAirportResult, setFromAirportResults] = useState([]);
+    const [toAirportResult, setToAirportResults] = useState([]);
+
+    const [fromLoading, setFromLoading] = useState(false);
+    const [toLoading, setToLoading] = useState(false);
+
+    const [selectedFromAirport, setSelectedFromAirport] = useState(-1);
+    const [selectedToAirport, setSelectedToAirport] = useState(-1);
+
+    const searchFromAirports = async () => {
+        setFromLoading(true);
+
+        const results = await browseAirports(fromAirportSearch);
+        setFromAirportResults(results);
+
+        setFromLoading(false);
+    };
+
+    const searchToAirports = async () => {
+        setToLoading(true);
+
+        const results = await browseAirports(toAirportSearch);
+        setToAirportResults(results);
+
+        setToLoading(false);
+    }
+
+    const renderResults = (results, place) => {
+        return results.map((item, index) => (
+            <SearchItem
+                key={index}
+                item={item}
+                onClick={() => {
+                    if (place === 'from')
+                        setSelectedFromAirport(index);
+                    else
+                        setSelectedToAirport(index);
+                }}
+            />
+        ));
+    }
+
     useEffect(() => {
 
     }, []);
@@ -178,15 +243,60 @@ const Home = () => {
                 <h3 style={styles.subTitle}>Cheapest and fastest flights on the web</h3>
 
                 <div style={styles.searchInputsContainer}>
-                    <SearchInput
-                        title={'From'}
-                        placeholder={'Enter a city or an airport...'}
-                    />
+                    <div>
+                        <SearchInput
+                            title={'From'}
+                            placeholder={'Enter a city or an airport...'}
+                            value={fromAirportSearch}
+                            onTextChange={newValue => {
+                                setFromAirportSearch(newValue);
 
-                    <SearchInput
-                        title={'To'}
-                        placeholder={'Enter a city or an airport...'}
-                    />
+                                if (newValue.length >= 3)
+                                    searchFromAirports();
+                            }}
+                        />
+
+                        {fromLoading ? <div>Loading</div> :
+                            <>
+                                {!fromAirportResult.length ? <div>There are no airports.</div> :
+                                    <div style={styles.airportResultContainer}>
+                                        {renderResults(fromAirportResult, 'from')}
+                                    </div>
+                                }
+                            </>
+                        }
+
+                        <p>Selected airport {selectedFromAirport}</p>
+                    </div>
+
+                    <div>
+                        <SearchInput
+                            title={'To'}
+                            placeholder={'Enter a city or an airport...'}
+                            value={toAirportSearch}
+                            onTextChange={newValue => {
+                                setToAirportSearch(newValue);
+
+                                if (newValue.length >= 3)
+                                    searchToAirports();
+                            }}
+                        />
+
+                        {toLoading ? <div>Loading</div> :
+                            <>
+                                {!toAirportResult.length ? <div>There are no airports.</div> :
+                                    <div style={styles.airportResultContainer}>
+                                        {renderResults(toAirportResult, 'to')}
+                                    </div>
+                                }
+                            </>
+                        }
+
+                        <p>Selected airport {selectedToAirport}</p>
+
+                    </div>
+
+                    <button style={styles.submitButtonStyle}>Search</button>
                 </div>
             </div>
         </div>

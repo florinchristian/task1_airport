@@ -88,7 +88,7 @@ const RegisterSection = () => {
     const [secondPassword, setSecondPassword] = useState('');
 
     const register = async () => {
-        const result = await registerUser(email, password);
+        await registerUser(email, password);
 
         window.sessionStorage['userEmail'] = email;
         window.location.reload();

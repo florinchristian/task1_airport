@@ -18,6 +18,17 @@ const styles = {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-evenly'
+    },
+    airportResultContainer: {
+        width: '231px',
+        maxHeight: '60px',
+        overflowY: 'scroll',
+        backgroundColor: 'white',
+        marginTop: '10px',
+        borderRadius: '5px'
+    },
+    submitButtonStyle: {
+        height: '27px'
     }
 };
 
