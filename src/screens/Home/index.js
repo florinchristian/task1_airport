@@ -8,6 +8,7 @@ import {MdOutlineAirplaneTicket} from 'react-icons/md';
 
 import AuthModal from "../../components/AuthModal";
 import browseAirports from "../../services/browseAirports";
+import browseFlights from "../../services/browseFlights";
 
 const DropdownOption = ({icon, title, onClick}) => {
     const [hovered, setHovered] = useState(false);
@@ -161,7 +162,7 @@ const AuthHeader = () => {
     );
 };
 
-const SearchItem = ({item, onClick}) => {
+const SearchItem = ({item, onClick, selected}) => {
     const [hovered, setHovered] = useState(false);
 
     return (
@@ -170,7 +171,7 @@ const SearchItem = ({item, onClick}) => {
             onMouseLeave={() => setHovered(false)}
             onClick={onClick}
             style={{
-                backgroundColor: hovered? '#f0f0f0' : null,
+                backgroundColor: (hovered || selected)? '#f0f0f0' : null,
                 padding: '10px',
                 cursor: 'pointer'
             }}
@@ -193,8 +194,16 @@ const Home = () => {
     const [selectedFromAirport, setSelectedFromAirport] = useState(-1);
     const [selectedToAirport, setSelectedToAirport] = useState(-1);
 
+    const [departureDate, setDepartureDate] = useState('');
+    const [returnDate, setReturnDate] = useState('');
+
+    const [isOneWay, setIsOneWay] = useState('false');
+
+    const [numberOfSeats, setNumberOfSeats] = useState(1);
+
     const searchFromAirports = async () => {
         setFromLoading(true);
+        setSelectedFromAirport(-1);
 
         const results = await browseAirports(fromAirportSearch);
         setFromAirportResults(results);
@@ -204,11 +213,19 @@ const Home = () => {
 
     const searchToAirports = async () => {
         setToLoading(true);
+        setSelectedToAirport(-1);
 
         const results = await browseAirports(toAirportSearch);
         setToAirportResults(results);
 
         setToLoading(false);
+    }
+
+    const compute = place => {
+        if (place === 'to')
+            return selectedToAirport;
+        else
+            return selectedFromAirport;
     }
 
     const renderResults = (results, place) => {
@@ -222,8 +239,25 @@ const Home = () => {
                     else
                         setSelectedToAirport(index);
                 }}
+                selected={compute(place) === index}
             />
         ));
+    }
+
+    const searchForFlights = async () => {
+        const config = {
+            'fromAirport': selectedFromAirport,
+            'toAirport': selectedToAirport,
+            'departureDate': departureDate,
+            'numberOfSeats': numberOfSeats
+        };
+
+        if (!isOneWay)
+            config['returnDate'] = returnDate;
+
+        const result = await browseFlights(config);
+
+        console.log(result);
     }
 
     useEffect(() => {
@@ -245,6 +279,7 @@ const Home = () => {
                 <div style={styles.searchInputsContainer}>
                     <div>
                         <SearchInput
+                            type={'text'}
                             title={'From'}
                             placeholder={'Enter a city or an airport...'}
                             value={fromAirportSearch}
@@ -266,11 +301,12 @@ const Home = () => {
                             </>
                         }
 
-                        <p>Selected airport {selectedFromAirport}</p>
+                        {/*<p>Selected airport {selectedFromAirport}</p>*/}
                     </div>
 
                     <div>
                         <SearchInput
+                            type={'text'}
                             title={'To'}
                             placeholder={'Enter a city or an airport...'}
                             value={toAirportSearch}
@@ -292,11 +328,49 @@ const Home = () => {
                             </>
                         }
 
-                        <p>Selected airport {selectedToAirport}</p>
+                        {/*<p>Selected airport {selectedToAirport}</p>*/}
 
                     </div>
 
-                    <button style={styles.submitButtonStyle}>Search</button>
+                    <SearchInput
+                        type={'date'}
+                        title={'Departure'}
+                        value={departureDate}
+                        onTextChange={newValue => {
+                            setDepartureDate(newValue);
+                        }}
+                    />
+
+                    <div>
+                        <SearchInput
+                            disabled={isOneWay === 'true'}
+                            type={'date'}
+                            title={'Return'}
+                            value={returnDate}
+                            onTextChange={newValue => {
+                                setReturnDate(newValue);
+                            }}
+                        />
+
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'row'
+                        }}>
+                            <input value={isOneWay} onChange={event => {
+                                const newValue = event.target.value;
+
+                                setIsOneWay((newValue === 'true')? 'false' : 'true');
+                            }} type={"checkbox"}/>
+                            <p>One way</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p>Number of seats:</p>
+                        <input value={numberOfSeats} onChange={event => setNumberOfSeats(event.target.value)} type={'number'} min={1} max={6}/>
+                    </div>
+
+                    <button onClick={browseFlights} style={styles.submitButtonStyle}>Search</button>
                 </div>
             </div>
         </div>

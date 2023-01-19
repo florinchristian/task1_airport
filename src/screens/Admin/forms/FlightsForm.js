@@ -1,6 +1,7 @@
 import {useState} from "react";
 import browseAirports from "../../../services/browseAirports";
 import browseAirplanes from "../../../services/browseAirplanes";
+import insertFlight from "../../../services/insertFlight";
 
 const styles = {
     resultsContainer: {
@@ -92,17 +93,17 @@ const FlightsForm = () => {
         setAvailableAirplanes(result);
     }
 
-    const insertFlight = async () => {
-        // console.log({
-        //     'airplane': availableAirplanes[selectedAirplane],
-        //     'fromAirport': fromAirportSearchResult[selectedFromAirport],
-        //     'toAirport': toAirportSearchResult[selectedToAirport],
-        //     selectedLeaveDate,
-        //     selectedArrivalDate,
-        //     price,
-        // });
+    const registerFlight = async () => {
+        await insertFlight({
+            'airplane': availableAirplanes[selectedAirplane],
+            'fromAirport': fromAirportSearchResult[selectedFromAirport],
+            'toAirport': toAirportSearchResult[selectedToAirport],
+            'startTime': selectedLeaveDate,
+            'endTime': selectedArrivalDate,
+            price,
+        });
 
-
+        window.location.reload();
     }
 
     return (
@@ -219,7 +220,7 @@ const FlightsForm = () => {
                     ))}
                 </div>
 
-                <button onClick={insertFlight} style={{
+                <button onClick={registerFlight} style={{
                     display: 'block'
                 }}>Confirm flight
                 </button>

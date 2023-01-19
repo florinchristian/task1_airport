@@ -3,9 +3,10 @@ const styles = {
         display: 'flex',
         backgroundColor: 'white',
         borderRadius: '3px',
+        height: '49px'
     },
     title: {
-        padding: '5px 15px 5px 15px'
+        padding: '5px 15px 5px 15px',
     },
     input: {
         border: 0,

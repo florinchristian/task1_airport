@@ -16,12 +16,13 @@ const styles = {
     searchInputsContainer: {
         width: '100%',
         display: 'flex',
+        flexWrap: 'wrap',
         flexDirection: 'row',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-evenly',
     },
     airportResultContainer: {
         width: '231px',
-        maxHeight: '60px',
+        maxHeight: '160px',
         overflowY: 'scroll',
         backgroundColor: 'white',
         marginTop: '10px',

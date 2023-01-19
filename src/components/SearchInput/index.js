@@ -1,18 +1,25 @@
 import styles from "./styles";
 
-const SearchInput = ({title, placeholder, value, onTextChange}) => {
+const SearchInput = ({title, placeholder, value, onTextChange, type, disabled}) => {
 
     return (
         <div style={styles.container}>
-            <p style={styles.title}>{title}</p>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                <p style={styles.title}>{title}</p>
+            </div>
 
             <input
+                disabled={disabled}
                 value={value}
                 onChange={event => {
                     onTextChange(event.target.value);
                 }}
                 style={styles.input}
-                type={'text'}
+                type={type}
                 placeholder={placeholder}
             />
         </div>
