@@ -1,5 +1,5 @@
 import styles from "./styles";
-import AccountPortal from "../AccountPortal";
+import AccountPortal from "../../components/AccountPortal";
 import {useState} from "react";
 
 const AuthModal = ({visible, closeModal}) => {

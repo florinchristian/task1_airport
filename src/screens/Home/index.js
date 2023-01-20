@@ -6,9 +6,11 @@ import {useEffect, useState} from "react";
 import {BiUserCircle, BiChevronDown, BiLogOut} from "react-icons/bi";
 import {MdOutlineAirplaneTicket} from 'react-icons/md';
 
-import AuthModal from "../../components/AuthModal";
+import AuthModal from "../../modals/AuthModal";
 import browseAirports from "../../services/browseAirports";
 import browseFlights from "../../services/browseFlights";
+import BookFlightModal from "../../modals/BookFlightModal";
+import getBusyFlightSeats from "../../services/getBusyFlightSeats";
 
 const DropdownOption = ({icon, title, onClick}) => {
     const [hovered, setHovered] = useState(false);
@@ -171,7 +173,7 @@ const SearchItem = ({item, onClick, selected}) => {
             onMouseLeave={() => setHovered(false)}
             onClick={onClick}
             style={{
-                backgroundColor: (hovered || selected)? '#f0f0f0' : null,
+                backgroundColor: (hovered || selected) ? '#f0f0f0' : null,
                 padding: '10px',
                 cursor: 'pointer'
             }}
@@ -200,6 +202,11 @@ const Home = () => {
     const [isOneWay, setIsOneWay] = useState('false');
 
     const [numberOfSeats, setNumberOfSeats] = useState(1);
+
+    const [flights, setFlights] = useState([]);
+
+    const [bookFlightModalVisible, setBookFlightModalVisible] = useState(false);
+    const [flightConfig, setFlightConfig] = useState({});
 
     const searchFromAirports = async () => {
         setFromLoading(true);
@@ -246,8 +253,8 @@ const Home = () => {
 
     const searchForFlights = async () => {
         const config = {
-            'fromAirport': selectedFromAirport,
-            'toAirport': selectedToAirport,
+            'fromAirport': fromAirportResult[selectedFromAirport]['id'],
+            'toAirport': toAirportResult[selectedToAirport]['id'],
             'departureDate': departureDate,
             'numberOfSeats': numberOfSeats
         };
@@ -257,8 +264,20 @@ const Home = () => {
 
         const result = await browseFlights(config);
 
-        console.log(result);
+        setFlights(result);
     }
+
+    const browseBusySeats = async flightId => {
+        const result = await getBusyFlightSeats(flightId);
+        setFlightConfig(result);
+
+        setBookFlightModalVisible(true);
+    }
+
+    const createBooking = selectedSeats => {
+        console.log(selectedSeats);
+    };
+
 
     useEffect(() => {
 
@@ -271,6 +290,14 @@ const Home = () => {
             background: "linear-gradient(180deg, rgba(0,121,255,1) 0%, rgba(0,212,255,0) 100%)",
         }}>
             <AuthHeader/>
+
+            <BookFlightModal
+                visible={bookFlightModalVisible}
+                flightConfig={flightConfig}
+                createBooking={createBooking}
+                maximumSeats={numberOfSeats}
+                closeModal={() => setBookFlightModalVisible(false)}
+            />
 
             <div style={styles.container}>
                 <h1 style={styles.title}>Flightr</h1>
@@ -359,7 +386,7 @@ const Home = () => {
                             <input value={isOneWay} onChange={event => {
                                 const newValue = event.target.value;
 
-                                setIsOneWay((newValue === 'true')? 'false' : 'true');
+                                setIsOneWay((newValue === 'true') ? 'false' : 'true');
                             }} type={"checkbox"}/>
                             <p>One way</p>
                         </div>
@@ -367,10 +394,34 @@ const Home = () => {
 
                     <div>
                         <p>Number of seats:</p>
-                        <input value={numberOfSeats} onChange={event => setNumberOfSeats(event.target.value)} type={'number'} min={1} max={6}/>
+                        <input value={numberOfSeats} onChange={event => setNumberOfSeats(event.target.value)}
+                               type={'number'} min={1} max={6}/>
                     </div>
 
-                    <button onClick={browseFlights} style={styles.submitButtonStyle}>Search</button>
+                    <button onClick={searchForFlights} style={styles.submitButtonStyle}>Search</button>
+                </div>
+
+                <div style={styles.searchContainer}>
+                    <h2>Search results</h2>
+
+                    <div style={styles.flightsContainer}>
+                        {flights.map(item => (
+                            <div style={styles.flightItem}>
+                                <div>
+                                    <p>{fromAirportResult[selectedFromAirport]['name']}{' '}
+                                        <b>to</b> {toAirportResult[selectedToAirport]['name']}</p>
+                                    <p>Departure: {item['startTime']}</p>
+                                    <p>Arrive: {item['endTime']}</p>
+                                </div>
+
+                                <div>
+                                    <p>Price: {item['price']} RON</p>
+                                    <button onClick={() => browseBusySeats(item['id'])}>Book flight
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

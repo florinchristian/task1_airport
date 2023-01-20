@@ -1,7 +1,6 @@
 const styles = {
     container: {
         width: '100%',
-        height: 'calc(100% - 50px)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -30,6 +29,17 @@ const styles = {
     },
     submitButtonStyle: {
         height: '27px'
+    },
+    searchContainer: {
+        width: '100%',
+    },
+    flightsContainer: {
+
+    },
+    flightItem: {
+        backgroundColor: 'white',
+        display: 'flex',
+        justifyContent: 'space-between'
     }
 };
 
